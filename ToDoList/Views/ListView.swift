@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
+import Blackbird
 
 struct ListView: View {
     
     //MARK: Stored property
-    @State var todoItem : [TodoItem] = existingTodoItems
+    @BlackbirdLiveModels({db in
+        try await TodoItem.read(from: db)
+    }) var TodoItems
     
     @State var newItemDescription: String = ""
     //MARK: Computed Property
@@ -23,15 +26,15 @@ struct ListView: View {
                     TextField("Enter a to-do item", text: $newItemDescription)
                         .padding()
                     Button(action: {
-                        let lastId = todoItem.last!.id
+                      /*  let lastId = TodoItems.last!.id
                         
                         let newId = lastId + 1
                         
                         let newTodoItem = TodoItem(id: newId, description: newItemDescription, completed: false)
                         
-                        todoItem.append(newTodoItem)
+                        TodoItems.append(newTodoItem)
                         
-                        newItemDescription = ""
+                        newItemDescription = ""*/
                     }, label:{
                         Text("ADD")
                             .font(.caption)
@@ -40,7 +43,7 @@ struct ListView: View {
                     .padding()
                 }
                 
-                List(todoItem){ currentItem in
+                List(TodoItems.results){ currentItem in
                     
                     Label(title: {
                         Text(currentItem.description)
