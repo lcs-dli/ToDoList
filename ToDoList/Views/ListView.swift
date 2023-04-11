@@ -11,6 +11,9 @@ import Blackbird
 struct ListView: View {
     
     //MARK: Stored property
+    @Environment(\.blackbirdDatabase) var db:
+        Blackbird.Database?
+    
     @BlackbirdLiveModels({db in
         try await TodoItem.read(from: db)
     }) var TodoItems
@@ -35,6 +38,15 @@ struct ListView: View {
                         TodoItems.append(newTodoItem)
                         
                         newItemDescription = ""*/
+                        Task{
+                            try await db!.transaction({ core in
+                                try core.query("INSERT INTO TodoItem (description) VALUES (?)", newItemDescription)
+                                
+                            })
+                            
+                            newItemDescription = ""
+                        }
+                        
                     }, label:{
                         Text("ADD")
                             .font(.caption)
@@ -54,6 +66,18 @@ struct ListView: View {
                             Image(systemName: "circle")
                         }
                     })
+                    .onTapGesture {
+                        Task{
+                            try await db!.transaction({core in
+                                
+                                try core.query("Update ToDoItem SET completed = (?) WHERE id = (?)",
+                                               !currentItem.completed,
+                                               currentItem.id
+                                )
+                                
+                            })
+                        }
+                    }
                     
                 }
                 
